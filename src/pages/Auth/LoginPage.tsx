@@ -25,9 +25,12 @@ const LoginPage: React.FC = () => {
 
     setError('');
     setIsLoading(true);
+    console.log("Login attempt started for:", username);
 
     try {
+      console.log("Sending POST to /api/auth/login...");
       const res = await api.post('/auth/login', { username, password });
+      console.log("Login successful, received token.");
       localStorage.setItem('token', res.data.access_token);
       if (res.data.username === 'Admin') {
         navigate('/admin');
@@ -35,6 +38,7 @@ const LoginPage: React.FC = () => {
         navigate('/home');
       }
     } catch (err) {
+      console.error("Login request failed:", err);
       const apiErr = err as AxiosError<ApiErrorResponse>;
       if (apiErr.response?.data?.message) {
         setError(apiErr.response.data.message);
