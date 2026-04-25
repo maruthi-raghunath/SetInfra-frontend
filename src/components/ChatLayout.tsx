@@ -15,7 +15,7 @@ const ChatLayout = () => {
           type="button"
           className="window-close"
           aria-label="Close window"
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/home')}
         >
           X
         </button>

@@ -76,7 +76,7 @@ const CreateStudyPage = () => {
         </div>
       </div>
       <div className="footer-actions">
-        <button className="btn" onClick={() => navigate('/')}>Home</button>
+        <button className="btn" onClick={() => navigate('/home')}>Home</button>
         <button className="btn" onClick={() => navigate(-1)}>Back</button>
       </div>
     </section>

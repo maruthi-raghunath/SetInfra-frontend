@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AxiosError } from 'axios';
 import api from '../../services/api';
@@ -10,6 +10,11 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Clear any stale token so the app always starts fresh from the login screen
+  useEffect(() => {
+    localStorage.removeItem('token');
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,11 +32,19 @@ const LoginPage: React.FC = () => {
       if (res.data.username === 'Admin') {
         navigate('/admin');
       } else {
-        navigate('/');
+        navigate('/home');
       }
     } catch (err) {
       const apiErr = err as AxiosError<ApiErrorResponse>;
-      setError(apiErr.response?.data?.message || 'Login failed. Please check your credentials.');
+      if (apiErr.response?.data?.message) {
+        setError(apiErr.response.data.message);
+      } else if (apiErr.response?.status === 401) {
+        setError('Invalid username or password.');
+      } else if (apiErr.request) {
+        setError('Cannot reach the server. Please check your connection.');
+      } else {
+        setError('Login failed. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -74,7 +87,7 @@ const LoginPage: React.FC = () => {
               disabled={isLoading || !username.trim() || !password}
               style={{ flex: 1 }}
             >
-              Sign In
+              {isLoading ? 'Signing in…' : 'Sign In'}
             </button>
             <button
               type="button"

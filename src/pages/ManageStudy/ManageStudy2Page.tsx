@@ -116,7 +116,7 @@ const ManageStudy2Page = () => {
         </div>
       </div>
       <div className="footer-actions">
-        <button className="btn" onClick={() => navigate('/')}>Home</button>
+        <button className="btn" onClick={() => navigate('/home')}>Home</button>
         <button className="btn" onClick={() => navigate('/studies/manage-1')}>Back</button>
       </div>
     </section>

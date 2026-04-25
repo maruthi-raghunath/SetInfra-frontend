@@ -373,7 +373,7 @@ const NewChatPage: React.FC = () => {
           <button
             id="btn-home"
             className="btn btn-new-chat"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/home')}
           >
             ⌂ Home
           </button>

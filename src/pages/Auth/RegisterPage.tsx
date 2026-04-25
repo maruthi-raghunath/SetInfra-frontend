@@ -87,7 +87,7 @@ const RegisterPage: React.FC = () => {
         <div className="window-frame" style={{ maxWidth: 440, minHeight: 'auto', padding: '32px', textAlign: 'center' }}>
           <h2 className="title">Success</h2>
           <p className="message success">Sign Up is successful</p>
-          <button className="btn" style={{ marginTop: '20px' }} onClick={() => navigate('/login')}>
+          <button className="btn" style={{ marginTop: '20px' }} onClick={() => navigate('/')}>
             OK
           </button>
         </div>
@@ -155,7 +155,7 @@ const RegisterPage: React.FC = () => {
               type="button"
               className="btn"
               style={{ flex: 1 }}
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/')}
             >
               Cancel
             </button>
