@@ -40,12 +40,15 @@ const LoginPage: React.FC = () => {
     } catch (err) {
       console.error("Login request failed:", err);
       const apiErr = err as AxiosError<ApiErrorResponse>;
-      if (apiErr.response?.data?.message) {
+      
+      if (apiErr.code === 'ECONNABORTED') {
+        setError('Server is taking too long to respond. It might be waking up—please try again in a moment.');
+      } else if (apiErr.response?.data?.message) {
         setError(apiErr.response.data.message);
       } else if (apiErr.response?.status === 401) {
         setError('Invalid username or password.');
       } else if (apiErr.request) {
-        setError('Cannot reach the server. Please check your connection.');
+        setError('Cannot reach the server. Please verify your VITE_API_URL and CORS settings.');
       } else {
         setError('Login failed. Please try again.');
       }
