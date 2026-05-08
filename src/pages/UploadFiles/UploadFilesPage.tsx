@@ -190,7 +190,7 @@ const UploadFilesPage = () => {
             })}
           </div>
 
-          <p className="message">Schema files must be uploaded as CSV or Excel.</p>
+          <p className="message" style={{ margin: '12px 0' }}>Schema files must be uploaded as CSV or Excel.</p>
           
           <div className="actions-row">
             <button className="btn" onClick={handleProcess} disabled={uploadCount === 0 && existingFiles.length === 0 || processing || savingType !== null}>
@@ -207,7 +207,9 @@ const UploadFilesPage = () => {
             <button className="btn" onClick={() => navigate(-1)}>Back</button>
           </div>
 
-          {message ? <p className="message success">{message}</p> : null}
+          {message && !processSuccess ? <p className="message success">{message}</p> : null}
+          {processSuccess && !existingFiles.some(f => !f.is_processed) ? <p className="message success">Processing complete ✅</p> : null}
+          {processSuccess && existingFiles.some(f => !f.is_processed) ? <p className="message">Processing started in background (wait for ✅)</p> : null}
           {error ? <p className="message error">{error}</p> : null}
 
           <div className="existing-files-section" style={{ marginTop: '2rem' }}>
