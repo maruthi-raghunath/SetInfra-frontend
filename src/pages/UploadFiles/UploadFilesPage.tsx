@@ -175,7 +175,7 @@ const UploadFilesPage = () => {
       <h1 className="title">SetInfra - Upload Protocol, SDTM & Schema - {studyName || '...'}</h1>
       <div className="screen-body">
         <div className="screen-wide">
-          <div className="file-grid">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             {renderRow('Protocol', protocolFile, 'Protocol', protocolInputRef, setProtocolFile, () => {
               setProtocolFile(null);
               if (protocolInputRef.current) protocolInputRef.current.value = '';
