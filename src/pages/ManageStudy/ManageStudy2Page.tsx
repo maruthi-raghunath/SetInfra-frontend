@@ -12,6 +12,7 @@ const ManageStudy2Page = () => {
   const [studyName, setStudyName] = useState<string>(location.state?.studyName || '');
   const [selectedId, setSelectedId] = useState<string>('');
   const [loading, setLoading] = useState(false);
+  const [processing, setProcessing] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -72,6 +73,31 @@ const ManageStudy2Page = () => {
     }
   };
 
+  const handleReprocess = async () => {
+    if (!study_id) return;
+    setMessage('');
+    setError('');
+
+    // Check if any files are unprocessed
+    const hasUnprocessed = files.some(f => !f.is_processed);
+    
+    setProcessing(true);
+    // Apply wait cursor to the whole document
+    document.body.style.cursor = 'wait';
+
+    try {
+      await api.post(`/files/process/${study_id}`);
+      setMessage("Processing started in the background. Please wait a few moments and refresh to see the completed status (✅).");
+      await fetchFiles();
+    } catch (err) {
+      const apiError = err as AxiosError<ApiErrorResponse>;
+      setError(apiError.response?.data?.message || 'Failed to process files.');
+    } finally {
+      setProcessing(false);
+      document.body.style.cursor = 'default';
+    }
+  };
+
   return (
     <section className="screen">
       <h1 className="title">SetInfra - Manage Study - {studyName || 'Unknown Study'}</h1>
@@ -89,24 +115,32 @@ const ManageStudy2Page = () => {
               <option value="">-- Select a File --</option>
               {files.map((file) => (
                 <option key={file.id} value={file.id}>
-                  {file.file_name} ({file.file_type})
+                  {file.file_name} ({file.file_type}) {file.is_processed ? '✅' : '⏳'}
                 </option>
               ))}
             </select>
-            <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
               <button
                 className="btn btn-danger"
                 onClick={handleDelete}
-                disabled={!selectedId || loading}
+                disabled={!selectedId || loading || processing}
               >
                 {loading ? 'Deleting...' : 'Delete'}
               </button>
               <button
                 className="btn"
                 onClick={() => navigate(`/studies/${study_id}/upload`, { state: { studyName } })}
-                disabled={!study_id}
+                disabled={!study_id || processing}
               >
                 Add files
+              </button>
+              <button
+                className="btn"
+                onClick={handleReprocess}
+                disabled={!study_id || processing}
+                style={{ backgroundColor: '#4a90e2', color: 'white' }}
+              >
+                {processing ? 'Processing...' : 'Reprocess files'}
               </button>
             </div>
           </div>
@@ -116,8 +150,8 @@ const ManageStudy2Page = () => {
         </div>
       </div>
       <div className="footer-actions">
-        <button className="btn" onClick={() => navigate('/home')}>Home</button>
-        <button className="btn" onClick={() => navigate('/studies/manage-1')}>Back</button>
+        <button className="btn" onClick={() => navigate('/home')} disabled={processing}>Home</button>
+        <button className="btn" onClick={() => navigate('/studies/manage-1')} disabled={processing}>Back</button>
       </div>
     </section>
   );

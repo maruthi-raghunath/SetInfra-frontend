@@ -12,6 +12,7 @@ import RecentChatPage from './pages/Chat/RecentChatPage';
 import LoginPage from './pages/Auth/LoginPage';
 import RegisterPage from './pages/Auth/RegisterPage';
 import AdminPage from './pages/Admin/AdminPage';
+import ErrorBoundary from './components/ErrorBoundary';
 import { Navigate } from 'react-router-dom';
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
@@ -24,7 +25,8 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 
 const App = () => {
   return (
-    <BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
       <Routes>
         <Route path="/" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -45,7 +47,8 @@ const App = () => {
           <Route path=":chat_id" element={<RecentChatPage />} />
         </Route>
       </Routes>
-    </BrowserRouter>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 };
 

@@ -79,7 +79,7 @@ const UploadFilesPage = () => {
     try {
       await api.post<ProcessFilesResponse>(`/files/process/${study_id}`);
       setProcessSuccess(true);
-      setMessage('Processing is complete.');
+      setMessage('Processing started in the background. Please wait a moment for completion.');
     } catch (err) {
       const apiError = err as AxiosError<ApiErrorResponse>;
       setError(apiError.response?.data?.message || 'Error processing files.');
@@ -182,7 +182,7 @@ const UploadFilesPage = () => {
 
           <p className="message">Schema files must be uploaded as CSV or Excel.</p>
 
-          <p className="message">{processSuccess ? 'Processing is complete.' : `${uploadCount} files saved.`}</p>
+          <p className="message">{processSuccess ? 'Processing started in background (wait for ✅)' : `${uploadCount} files saved.`}</p>
           {message && !processSuccess ? <p className="message success">{message}</p> : null}
           {error ? <p className="message error">{error}</p> : null}
 

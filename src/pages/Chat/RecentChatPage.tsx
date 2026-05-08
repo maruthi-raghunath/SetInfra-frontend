@@ -76,14 +76,15 @@ const RecentChatPage: React.FC = () => {
     }
   }, []);
 
-  // Convert persisted ChatMessage → LocalMessage (assistant messages have no
-  // sql / dataRows stored — show only the explanation text + metrics)
   const hydrateHistory = useCallback((data: MessagesResponse) => {
     const local: LocalMessage[] = data.messages.map((m) => ({
       id: m.id,
       role: m.role,
       text: m.message_body,
       metrics: m.role === 'assistant' ? (m.metrics_json ?? null) : undefined,
+      sql: m.role === 'assistant' && m.metrics_json ? m.metrics_json.sql_query : undefined,
+      dataRows: m.role === 'assistant' && m.metrics_json ? m.metrics_json.data_rows : undefined,
+      chartType: m.role === 'assistant' && m.metrics_json ? m.metrics_json.chart_type : undefined,
       stage: m.role === 'assistant' ? 'done' : undefined,
     }));
     setMessages(local);

@@ -65,24 +65,33 @@ const NewChatPage: React.FC = () => {
   /** Apply `?study_id=` from URL once (e.g. from Upload Files) without fighting manual study changes. */
   const appliedStudyFromQuery = useRef(false);
 
+  const [fetchingStudies, setFetchingStudies] = useState(false);
+  const [fetchingChats, setFetchingChats] = useState(false);
+
   // ── Fetch helpers ──────────────────────────────────────────────────────────
 
   const fetchStudies = useCallback(async () => {
+    setFetchingStudies(true);
     try {
       const res = await api.get<PaginatedResponse<Study>>('/studies');
       setStudies(res.data.data);
     } catch {
       // swallow — studies may not load on first mount
+    } finally {
+      setFetchingStudies(false);
     }
   }, []);
 
   const fetchChats = useCallback(async (studyId: string) => {
     if (!studyId) return;
+    setFetchingChats(true);
     try {
       const res = await api.get<PaginatedResponse<Chat>>(`/chats?study_id=${studyId}`);
       setChats(res.data.data);
     } catch {
       setChats([]);
+    } finally {
+      setFetchingChats(false);
     }
   }, []);
 
@@ -328,8 +337,12 @@ const NewChatPage: React.FC = () => {
           <div className="sql-block">{msg.sql}</div>
         )}
 
-        {msg.dataRows && (
-          <ResultTable rows={msg.dataRows} chartType={msg.chartType} />
+        {(msg.dataRows || msg.stage === 'sql_ready') && (
+          <ResultTable 
+            rows={msg.dataRows || []} 
+            chartType={msg.chartType} 
+            loading={msg.stage === 'sql_ready'} 
+          />
         )}
 
         {(msg.text || isCurrentlyStreaming) && (
@@ -387,24 +400,36 @@ const NewChatPage: React.FC = () => {
         </div>
 
         <div className="chat-list" role="list">
-          {chats.map((chat) => (
-            <div
-              key={chat.id}
-              className={`chat-list-item${activeChatId === chat.id ? ' active' : ''}`}
-              role="listitem"
-              onClick={() => handleChatClick(chat.id)}
-              title={chat.chat_title}
-            >
-              <span className="chat-list-item-title">{chat.chat_title}</span>
-              <button
-                className="chat-delete-btn"
-                aria-label={`Delete chat ${chat.chat_title}`}
-                onClick={(e) => handleDeleteChat(chat.id, e)}
-              >
-                🗑
-              </button>
+          {fetchingChats ? (
+            <div className="chat-skeleton-group">
+              <div className="chat-skeleton-item" style={{ height: '32px', margin: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }} />
+              <div className="chat-skeleton-item" style={{ height: '32px', margin: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }} />
+              <div className="chat-skeleton-item" style={{ height: '32px', margin: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }} />
             </div>
-          ))}
+          ) : chats.length === 0 ? (
+            <div className="chat-empty-state" style={{ padding: '20px', textAlign: 'center', opacity: 0.6, fontSize: '12px' }}>
+              {selectedStudyId ? "No previous chats. Start a new chat." : "Select a study to see chat history."}
+            </div>
+          ) : (
+            chats.map((chat) => (
+              <div
+                key={chat.id}
+                className={`chat-list-item${activeChatId === chat.id ? ' active' : ''}`}
+                role="listitem"
+                onClick={() => handleChatClick(chat.id)}
+                title={chat.chat_title}
+              >
+                <span className="chat-list-item-title">{chat.chat_title}</span>
+                <button
+                  className="chat-delete-btn"
+                  aria-label={`Delete chat ${chat.chat_title}`}
+                  onClick={(e) => handleDeleteChat(chat.id, e)}
+                >
+                  🗑
+                </button>
+              </div>
+            ))
+          )}
         </div>
       </aside>
 
@@ -417,12 +442,24 @@ const NewChatPage: React.FC = () => {
             className="chat-study-select"
             value={selectedStudyId}
             onChange={(e) => handleStudyChange(e.target.value)}
-            onClick={fetchStudies}
+            disabled={fetchingStudies || isStreaming}
           >
-            <option value="">-- Select Study --</option>
-            {studies.map((s) => (
-              <option key={s.id} value={s.id}>{s.study_name}</option>
-            ))}
+            {fetchingStudies ? (
+              <>
+                <option>Loading studies...</option>
+                <option disabled>▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒</option>
+                <option disabled>▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒</option>
+              </>
+            ) : studies.length === 0 ? (
+              <option value="">No studies found. Create one first.</option>
+            ) : (
+              <>
+                <option value="">-- Select Study --</option>
+                {studies.map((s) => (
+                  <option key={s.id} value={s.id}>{s.study_name}</option>
+                ))}
+              </>
+            )}
           </select>
           <span className="chat-status-icon" title="System status">{statusIcon}</span>
         </div>

@@ -72,6 +72,8 @@ export interface ChatMetrics {
   first_byte_ms?: number;
   stats_skipped?: boolean;
   chart_type?: string;
+  sql_query?: string;
+  data_rows?: Record<string, unknown>[];
   audit_log?: {
     prompt_id: string;
     timestamp: string;
@@ -82,6 +84,11 @@ export interface ChatMetrics {
     username: string;
     model_name: string;
     prompt_name: string;
+  };
+  compression_stats?: {
+    original_tokens: number;
+    actual_tokens: number;
+    savings_percentage: number;
   };
   [key: string]: unknown;
 }

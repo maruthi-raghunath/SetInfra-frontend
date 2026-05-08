@@ -13,6 +13,7 @@ if (typeof window !== 'undefined' && !(window as any).global) {
 interface ResultTableProps {
   rows: Record<string, unknown>[];
   chartType?: string;
+  loading?: boolean;
 }
 
 // Clinical-themed colour palette
@@ -57,12 +58,32 @@ function buildPlotData(chartTypeLower: string, columns: string[], rows: Record<s
         data: [{ x: x0, y: y1, type: 'bar', marker: { color: PALETTE[0] } }],
       };
 
-    // ── Horizontal bar (timeline / Gantt proxy) ───────────────────────────────
-    case 'timeline':
+    // ── Timeline (Scatter-based event plots) ─────────────────────────────────
+    case 'timeline': {
+      if (columns.length >= 3 && col2) {
+        // 3 cols: typically group_category, item_label, time_value
+        const groups: Record<string, {x: any[], y: any[]}> = {};
+        rows.forEach(r => {
+          const g = String(r[col0]);
+          if (!groups[g]) groups[g] = { x: [], y: [] };
+          groups[g].x.push(r[col2]);
+          groups[g].y.push(r[col1]);
+        });
+        const traces = Object.entries(groups).map(([name, data], i) => ({
+          x: data.x, y: data.y, type: 'scatter', mode: 'markers', name,
+          marker: { color: PALETTE[i % PALETTE.length], size: 10, symbol: 'square' }
+        }));
+        return {
+          data: traces,
+          layout: { margin: { t: 30, b: 50, l: 150, r: 20 }, hovermode: 'closest', xaxis: { title: col2 } },
+        };
+      }
+      // 2 cols: fallback scatter
       return {
-        data: [{ x: y1, y: x0, type: 'bar', orientation: 'h', marker: { color: PALETTE[0] } }],
-        layout: { margin: { t: 30, b: 50, l: 120, r: 20 } },
+        data: [{ x: y1, y: x0, type: 'scatter', mode: 'markers', marker: { color: PALETTE[0], size: 10, symbol: 'square' } }],
+        layout: { margin: { t: 30, b: 50, l: 120, r: 20 }, xaxis: { title: col1 } },
       };
+    }
 
     // ── Line ──────────────────────────────────────────────────────────────────
     case 'line':
@@ -229,7 +250,37 @@ function buildPlotData(chartTypeLower: string, columns: string[], rows: Record<s
   }
 }
 
-const ResultTable: React.FC<ResultTableProps> = ({ rows, chartType }) => {
+const ResultTable: React.FC<ResultTableProps> = ({ rows, chartType, loading }) => {
+  if (loading) {
+    return (
+      <div className="result-container" style={{ display: 'flex', flexDirection: 'column', gap: '8px', opacity: 0.7 }}>
+        <div className="chart-wrapper skeleton" style={{ height: '240px', background: '#f5f5f5', borderRadius: '4px', border: '1px dashed #ddd', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999', fontSize: '12px' }}>
+          Preparing visualization...
+        </div>
+        <div className="result-table-wrapper">
+          <table className="result-table">
+            <thead>
+              <tr>
+                <th style={{ background: '#f0f0f0' }}>▒▒▒▒</th>
+                <th style={{ background: '#f0f0f0' }}>▒▒▒▒</th>
+                <th style={{ background: '#f0f0f0' }}>▒▒▒▒</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[1, 2, 3].map(i => (
+                <tr key={i}>
+                  <td><div style={{ height: '14px', background: '#f9f9f9', borderRadius: '2px' }} /></td>
+                  <td><div style={{ height: '14px', background: '#f9f9f9', borderRadius: '2px' }} /></td>
+                  <td><div style={{ height: '14px', background: '#f9f9f9', borderRadius: '2px' }} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  }
+
   if (!rows || rows.length === 0) {
     return (
       <div className="result-table-wrapper" style={{ padding: '8px 10px', fontSize: 12, color: 'var(--text-muted)' }}>

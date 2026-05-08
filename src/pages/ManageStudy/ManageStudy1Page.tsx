@@ -11,15 +11,19 @@ const ManageStudy1Page = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [fetching, setFetching] = useState(false);
 
   const fetchStudies = async () => {
     setError('');
+    setFetching(true);
     try {
       const res = await api.get<PaginatedResponse<Study>>('/studies');
       setStudies(res.data.data);
     } catch (err) {
       const apiError = err as AxiosError<ApiErrorResponse>;
       setError(apiError.response?.data?.message || 'Unable to load studies.');
+    } finally {
+      setFetching(false);
     }
   };
 
@@ -62,14 +66,26 @@ const ManageStudy1Page = () => {
               className="input-field"
               value={selectedId}
               onChange={(e) => setSelectedId(e.target.value)}
-              onClick={fetchStudies}
+              disabled={fetching}
             >
-              <option value="">Select Study from the list</option>
-              {studies.map((study) => (
-                <option key={study.id} value={study.id}>
-                  {study.study_name} ({study.status})
-                </option>
-              ))}
+              {fetching ? (
+                <>
+                  <option>Loading studies...</option>
+                  <option disabled>▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒</option>
+                  <option disabled>▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒</option>
+                </>
+              ) : studies.length === 0 ? (
+                <option value="">No studies found. Create one first.</option>
+              ) : (
+                <>
+                  <option value="">Select Study from the list</option>
+                  {studies.map((study) => (
+                    <option key={study.id} value={study.id}>
+                      {study.study_name} ({study.status})
+                    </option>
+                  ))}
+                </>
+              )}
             </select>
             <div style={{ display: 'flex', gap: '12px' }}>
               <button
