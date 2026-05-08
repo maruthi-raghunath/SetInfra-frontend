@@ -51,7 +51,7 @@ const UploadFilesPage = () => {
 
   // Polling for file status
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: any;
     const hasUnprocessed = existingFiles.some(f => !f.is_processed);
     
     if (hasUnprocessed) {
