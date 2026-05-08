@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AxiosError } from 'axios';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import api from '../../services/api';
+import api, { getFullUrl } from '../../services/api';
 import InsightCard from '../../components/InsightCard/InsightCard';
 import ResultTable from '../../components/ResultTable/ResultTable';
 import MetricsSubtext from '../../components/MetricsSubtext/MetricsSubtext';
@@ -205,7 +205,7 @@ const NewChatPage: React.FC = () => {
       );
     };
 
-    fetch('/api/query', {
+    fetch(getFullUrl('/api/query'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

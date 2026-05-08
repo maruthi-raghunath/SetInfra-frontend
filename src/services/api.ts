@@ -11,6 +11,12 @@ const api = axios.create({
   },
 });
 
+export const getFullUrl = (path: string) => {
+  const base = apiURL ? apiURL.replace(/\/$/, '') : '';
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `${base}${cleanPath}`;
+};
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
