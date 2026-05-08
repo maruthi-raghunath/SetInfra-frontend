@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { AxiosError } from 'axios';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import api from '../../services/api';
-import { ApiErrorResponse, FileRecord, PaginatedResponse, ProcessFilesResponse, UploadFileResponse } from '../../types';
+import { ApiErrorResponse, FileRecord, PaginatedResponse, ProcessFilesResponse, Study, UploadFileResponse } from '../../types';
 
 const UploadFilesPage = () => {
   const { study_id } = useParams<{ study_id: string }>();
@@ -10,6 +10,7 @@ const UploadFilesPage = () => {
   const navigate = useNavigate();
 
   const [studyName, setStudyName] = useState<string>(location.state?.studyName || '');
+  const [studyStatus, setStudyStatus] = useState<string>('');
   const [protocolFile, setProtocolFile] = useState<File | null>(null);
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [schemaFile, setSchemaFile] = useState<File | null>(null);
@@ -27,26 +28,32 @@ const UploadFilesPage = () => {
   const [error, setError] = useState('');
   const [processSuccess, setProcessSuccess] = useState(false);
 
-  const fetchExistingFiles = async () => {
+  const fetchData = async () => {
     if (!study_id) return;
     try {
-      const res = await api.get<PaginatedResponse<FileRecord>>(`/files/${study_id}`);
-      setExistingFiles(res.data.data);
+      // 1. Get files
+      const fileRes = await api.get<PaginatedResponse<FileRecord>>(`/files/${study_id}`);
+      setExistingFiles(fileRes.data.data);
       
+      // 2. Get study info (including status)
+      const studyRes = await api.get<PaginatedResponse<Study>>('/studies');
+      const s = studyRes.data.data.find(x => x.id === study_id);
+      if (s) {
+        setStudyName(s.study_name);
+        setStudyStatus(s.status);
+      }
+
       // If all files are processed, we can consider processSuccess true
-      if (res.data.data.length > 0 && res.data.data.every(f => f.is_processed)) {
+      if (fileRes.data.data.length > 0 && fileRes.data.data.every(f => f.is_processed)) {
         setProcessSuccess(true);
-      } else if (res.data.data.length > 0 && res.data.data.some(f => !f.is_processed)) {
-        // If some files are still processing, we keep showing the "wait" message
-        setProcessSuccess(true); 
       }
     } catch (err) {
-      console.error('Failed to fetch existing files', err);
+      console.error('Failed to fetch data', err);
     }
   };
 
   useEffect(() => {
-    fetchExistingFiles();
+    fetchData();
   }, [study_id]);
 
   // Polling for file status
@@ -54,31 +61,17 @@ const UploadFilesPage = () => {
     let interval: any;
     const hasUnprocessed = existingFiles.some(f => !f.is_processed);
     
-    if (hasUnprocessed) {
+    // Always poll if the study status is 'Processing' OR we have unprocessed files
+    if (hasUnprocessed || studyStatus === 'Processing') {
       interval = setInterval(() => {
-        fetchExistingFiles();
+        fetchData();
       }, 5000); // Poll every 5 seconds
     }
     
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [existingFiles]);
-
-  useEffect(() => {
-    if (studyName) return;
-    const fetchStudyName = async () => {
-      if (!study_id) return;
-      try {
-        const res = await api.get<PaginatedResponse<{ id: string; study_name: string }>>('/studies');
-        const s = res.data.data.find(x => x.id === study_id);
-        setStudyName(s?.study_name || '');
-      } catch {
-        setStudyName('');
-      }
-    };
-    fetchStudyName();
-  }, [study_id]);
+  }, [existingFiles, studyStatus]);
 
   const handleSave = async (type: string, file: File | null) => {
     if (!file || !study_id) return;
@@ -97,7 +90,7 @@ const UploadFilesPage = () => {
       });
       setUploadCount((prev) => prev + 1);
       setMessage(`${type} file uploaded successfully.`);
-      fetchExistingFiles();
+      fetchData();
     } catch (err) {
       const apiError = err as AxiosError<ApiErrorResponse>;
       setError(apiError.response?.data?.message || `Error saving ${type} file.`);
@@ -117,7 +110,7 @@ const UploadFilesPage = () => {
       await api.post<ProcessFilesResponse>(`/files/process/${study_id}`);
       setProcessSuccess(true);
       setMessage('Processing started in the background. Please wait for the ✅ status below.');
-      fetchExistingFiles();
+      fetchData();
     } catch (err) {
       const apiError = err as AxiosError<ApiErrorResponse>;
       setError(apiError.response?.data?.message || 'Error processing files.');
@@ -193,8 +186,8 @@ const UploadFilesPage = () => {
           <p className="message" style={{ margin: '12px 0' }}>Schema files must be uploaded as CSV or Excel.</p>
           
           <div className="actions-row">
-            <button className="btn" onClick={handleProcess} disabled={uploadCount === 0 && existingFiles.length === 0 || processing || savingType !== null}>
-              {processing ? 'Processing...' : 'Process'}
+            <button className="btn" onClick={handleProcess} disabled={(uploadCount === 0 && existingFiles.length === 0) || processing || studyStatus === 'Processing'}>
+              {studyStatus === 'Processing' ? 'Processing...' : 'Process'}
             </button>
             <button
               className="btn"
@@ -209,7 +202,7 @@ const UploadFilesPage = () => {
 
           {message && !processSuccess ? <p className="message success">{message}</p> : null}
           {processSuccess && !existingFiles.some(f => !f.is_processed) ? <p className="message success">Processing complete ✅</p> : null}
-          {processSuccess && existingFiles.some(f => !f.is_processed) ? <p className="message">Processing started in background (wait for ✅)</p> : null}
+          {studyStatus === 'Processing' ? <p className="message">AI is reading your files. This may take a few moments... (wait for ✅)</p> : null}
           {error ? <p className="message error">{error}</p> : null}
 
           <div className="existing-files-section" style={{ marginTop: '2rem' }}>
@@ -233,8 +226,10 @@ const UploadFilesPage = () => {
                       <td>
                         {file.is_processed ? (
                           <span title="Processed">✅ Complete</span>
-                        ) : (
+                        ) : studyStatus === 'Processing' ? (
                           <span title="Processing" className="processing-spin">⏳ Processing...</span>
+                        ) : (
+                          <span title="Pending" style={{ color: '#888' }}>⏳ Pending - Click "Process"</span>
                         )}
                       </td>
                     </tr>
