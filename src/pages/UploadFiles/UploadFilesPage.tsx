@@ -210,32 +210,34 @@ const UploadFilesPage = () => {
             {existingFiles.length === 0 ? (
               <p className="message">No files uploaded yet.</p>
             ) : (
-              <table className="data-table" style={{ width: '100%', marginTop: '0.5rem' }}>
-                <thead>
-                  <tr>
-                    <th>File Name</th>
-                    <th>Type</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {existingFiles.map((file) => (
-                    <tr key={file.id}>
-                      <td>{file.file_name}</td>
-                      <td>{file.file_type}</td>
-                      <td>
-                        {file.is_processed ? (
-                          <span title="Processed">✅ Complete</span>
-                        ) : studyStatus === 'Processing' ? (
-                          <span title="Processing" className="processing-spin">⏳ Processing...</span>
-                        ) : (
-                          <span title="Pending" style={{ color: '#888' }}>⏳ Pending - Click "Process"</span>
-                        )}
-                      </td>
+              <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                <table className="data-table" style={{ width: '100%', marginTop: '0.5rem' }}>
+                  <thead>
+                    <tr>
+                      <th>File Name</th>
+                      <th>Type</th>
+                      <th>Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {existingFiles.map((file) => (
+                      <tr key={file.id}>
+                        <td>{file.file_name}</td>
+                        <td>{file.file_type}</td>
+                        <td>
+                          {file.is_processed ? (
+                            <span title="Processed">✅ Complete</span>
+                          ) : studyStatus === 'Processing' ? (
+                            <span title="Processing" className="processing-spin">⏳ Processing...</span>
+                          ) : (
+                            <span title="Pending" style={{ color: '#888' }}>⏳ Pending - Click "Process"</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>

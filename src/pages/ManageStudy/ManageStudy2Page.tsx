@@ -20,7 +20,7 @@ const ManageStudy2Page = () => {
     if (!study_id) return;
     setError('');
     try {
-      const res = await api.get<PaginatedResponse<FileRecord>>(`/files?study_id=${study_id}`);
+      const res = await api.get<PaginatedResponse<FileRecord>>(`/files/${study_id}`);
       setFiles(res.data.data);
       if (!selectedId && res.data.data.length > 0) {
         setSelectedId(res.data.data[0].id);
