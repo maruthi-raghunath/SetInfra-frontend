@@ -382,10 +382,13 @@ const NewChatPage: React.FC = () => {
       {/* ── Left sidebar ────────────────────────────────────────────── */}
       <aside className="chat-sidebar">
         <div className="chat-sidebar-header">
-          <p className="chat-sidebar-title">Setinfra</p>
+          <div className="chat-sidebar-brand">
+            <div className="chat-sidebar-logo">S</div>
+            <p className="chat-sidebar-title">Setinfra</p>
+          </div>
           <button
             id="btn-home"
-            className="btn btn-new-chat"
+            className="btn btn-new-chat btn-sidebar-home"
             onClick={() => navigate('/home')}
           >
             ⌂ Home
@@ -402,12 +405,12 @@ const NewChatPage: React.FC = () => {
         <div className="chat-list" role="list">
           {fetchingChats ? (
             <div className="chat-skeleton-group">
-              <div className="chat-skeleton-item" style={{ height: '32px', margin: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }} />
-              <div className="chat-skeleton-item" style={{ height: '32px', margin: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }} />
-              <div className="chat-skeleton-item" style={{ height: '32px', margin: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }} />
+              <div className="chat-skeleton-item" style={{ height: '32px' }} />
+              <div className="chat-skeleton-item" style={{ height: '32px' }} />
+              <div className="chat-skeleton-item" style={{ height: '32px' }} />
             </div>
           ) : chats.length === 0 ? (
-            <div className="chat-empty-state" style={{ padding: '20px', textAlign: 'center', opacity: 0.6, fontSize: '12px' }}>
+            <div className="chat-empty-state">
               {selectedStudyId ? "No previous chats. Start a new chat." : "Select a study to see chat history."}
             </div>
           ) : (

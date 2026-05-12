@@ -350,8 +350,11 @@ const RecentChatPage: React.FC = () => {
       {/* ── Left sidebar ────────────────────────────────────────── */}
       <aside className="chat-sidebar">
         <div className="chat-sidebar-header">
-          <p className="chat-sidebar-title">Setinfra</p>
-          <button className="btn btn-new-chat" onClick={() => navigate('/home')}>
+          <div className="chat-sidebar-brand">
+            <div className="chat-sidebar-logo">S</div>
+            <p className="chat-sidebar-title">Setinfra</p>
+          </div>
+          <button className="btn btn-new-chat btn-sidebar-home" onClick={() => navigate('/home')}>
             ⌂ Home
           </button>
           <button className="btn btn-new-chat" onClick={() => navigate('/chat/new')}>

@@ -148,17 +148,17 @@ const UploadFilesPage = () => {
             if (f) setFile(f);
           }}
         />
-        <button className="btn-small" onClick={() => inputRef.current?.click()}>Browse</button>
+        <button className="btn btn-sm btn-outline" onClick={() => inputRef.current?.click()}>Browse</button>
       </div>
       <div className="button-group">
         <button
-          className="btn-small btn-success"
+          className="btn btn-sm btn-success"
           disabled={!file || savingType !== null}
           onClick={() => handleSave(type, file)}
         >
           {savingType === type ? 'Saving...' : 'Save'}
         </button>
-        <button className="btn-small btn-danger" onClick={onCancel}>Cancel</button>
+        <button className="btn btn-sm btn-danger" onClick={onCancel}>Cancel</button>
       </div>
     </div>
   );
@@ -210,7 +210,7 @@ const UploadFilesPage = () => {
             {existingFiles.length === 0 ? (
               <p className="message">No files uploaded yet.</p>
             ) : (
-              <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+              <div style={{ maxHeight: '145px', overflowY: 'auto', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
                 <table className="data-table" style={{ width: '100%', marginTop: '0.5rem' }}>
                   <thead>
                     <tr>
