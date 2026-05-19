@@ -167,6 +167,24 @@ const NewChatPage: React.FC = () => {
 
   // ── Send prompt ────────────────────────────────────────────────────────────
 
+  // Define a fallback function at the top of your file or right above the code
+  const generateUUID = () => {
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+      return window.crypto.randomUUID();
+    }
+    // Fallback math-based UUID generator for insecure contexts (HTTP IP)
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  };
+
+  // Then change your state or message initialization line:
+  // Old line: const id = crypto.randomUUID();
+  // New line:
+  const id = generateUUID();
+
   const handleSend = useCallback(() => {
     const trimmed = prompt.trim();
     if (!trimmed || !selectedStudyId || isStreaming) return;
@@ -174,6 +192,7 @@ const NewChatPage: React.FC = () => {
     setGlobalError('');
     setIsStreaming(true);
     setStatusIcon('🤔');
+    // -----enable the crypto API even if the website is loaded over HTTP (not in a Secure Context (HTTPS) or localhost)----
 
     const msgId = crypto.randomUUID();
 
@@ -338,10 +357,10 @@ const NewChatPage: React.FC = () => {
         )}
 
         {(msg.dataRows || msg.stage === 'sql_ready') && (
-          <ResultTable 
-            rows={msg.dataRows || []} 
-            chartType={msg.chartType} 
-            loading={msg.stage === 'sql_ready'} 
+          <ResultTable
+            rows={msg.dataRows || []}
+            chartType={msg.chartType}
+            loading={msg.stage === 'sql_ready'}
           />
         )}
 
