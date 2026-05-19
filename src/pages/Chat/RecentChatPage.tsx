@@ -157,6 +157,19 @@ const RecentChatPage: React.FC = () => {
 
   // ── Send reply ─────────────────────────────────────────────────────────────
 
+  // Define a fallback function at the top of your file or right above the code
+  const generateUUID = () => {
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+      return window.crypto.randomUUID();
+    }
+    // Fallback math-based UUID generator for insecure contexts (HTTP IP)
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  };
+
   const handleSend = useCallback(() => {
     const trimmed = prompt.trim();
     if (!trimmed || !selectedStudyId || isStreaming) return;
@@ -166,11 +179,14 @@ const RecentChatPage: React.FC = () => {
     setStatusIcon('🤔');
     setPrompt('');
 
-    const assistantId = crypto.randomUUID();
+
+    //const assistantId = crypto.randomUUID();
+    const assistantId = generateUUID();
 
     setMessages((prev) => [
       ...prev,
-      { id: crypto.randomUUID(), role: 'user', text: trimmed },
+      //{ id: crypto.randomUUID(), role: 'user', text: trimmed },
+      { id: generateUUID(), role: 'user', text: trimmed },
       { id: assistantId, role: 'assistant', text: '', stage: 'thinking' },
     ]);
 
@@ -392,8 +408,8 @@ const RecentChatPage: React.FC = () => {
             {loading
               ? 'Loading history…'
               : selectedStudyId
-              ? studies.find((s) => s.id === selectedStudyId)?.study_name ?? 'Chat history'
-              : 'Chat history'}
+                ? studies.find((s) => s.id === selectedStudyId)?.study_name ?? 'Chat history'
+                : 'Chat history'}
           </span>
           <span className="chat-status-icon" title="System status">{statusIcon}</span>
         </div>
