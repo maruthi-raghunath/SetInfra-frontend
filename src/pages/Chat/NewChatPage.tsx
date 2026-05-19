@@ -194,12 +194,15 @@ const NewChatPage: React.FC = () => {
     setStatusIcon('🤔');
     // -----enable the crypto API even if the website is loaded over HTTP (not in a Secure Context (HTTPS) or localhost)----
 
-    const msgId = crypto.randomUUID();
+    //const msgId = crypto.randomUUID();
+    const msgId = generateUUID();
 
     // Add user message immediately
     setMessages((prev) => [
       ...prev,
-      { id: crypto.randomUUID(), role: 'user', text: trimmed },
+      //{ id: crypto.randomUUID(), role: 'user', text: trimmed },
+      { id: generateUUID(), role: 'user', text: trimmed },
+
     ]);
     setPrompt('');
 
